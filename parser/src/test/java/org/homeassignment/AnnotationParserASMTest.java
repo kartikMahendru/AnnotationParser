@@ -30,7 +30,7 @@ class AnnotationParserASMTest {
 
         // Mock ClassReader behavior
         ClassReader classReader = mock(ClassReader.class);
-        AnnotationParserASM.AnnotationCollector collector = new AnnotationParserASM.AnnotationCollector();
+        AnnotationCollector collector = new AnnotationCollector();
         doAnswer(invocation -> {
             collector.visit(Opcodes.ASM9, 0, "TestClass", null, null, null);
             collector.visitAnnotation("Lorg/example/MyAnnotation;", true);
@@ -40,7 +40,7 @@ class AnnotationParserASMTest {
         // Simulate processing
         Map<String, Map<String, Integer>> result = new HashMap<>();
         try (InputStream inputStream = new ByteArrayInputStream(new byte[0])) {
-            AnnotationParserASM.AnnotationCollector annotationCollector = new AnnotationParserASM.AnnotationCollector();
+            AnnotationCollector annotationCollector = new AnnotationCollector();
             annotationCollector.visit(Opcodes.ASM9, Opcodes.ACC_PUBLIC, "TestClass", null, null, null);
             annotationCollector.visitAnnotation("Lorg/example/MyAnnotation;", true);
             result.put(annotationCollector.getClassName(), annotationCollector.getAnnotations());
@@ -55,7 +55,7 @@ class AnnotationParserASMTest {
     @Test
     void testNoAnnotationsPresent() throws IOException {
         // Test for cases where no annotations exist in a class
-        AnnotationParserASM.AnnotationCollector collector = new AnnotationParserASM.AnnotationCollector();
+        AnnotationCollector collector = new AnnotationCollector();
         collector.visit(Opcodes.ASM9, Opcodes.ACC_PUBLIC, "PlainClass", null, null, null);
 
         // Ensure no annotations are detected
@@ -79,7 +79,7 @@ class AnnotationParserASMTest {
     @Test
     void testClassNameExtraction() {
         // Verify that class names are properly extracted
-        AnnotationParserASM.AnnotationCollector collector = new AnnotationParserASM.AnnotationCollector();
+        AnnotationCollector collector = new AnnotationCollector();
         collector.visit(Opcodes.ASM9, Opcodes.ACC_PUBLIC, "sample/TestClass", null, null, null);
 
         assertEquals("sample.TestClass", collector.getClassName());
@@ -88,7 +88,7 @@ class AnnotationParserASMTest {
     @Test
     void testAnnotationOnMethods() {
         // Mock method-level annotations
-        AnnotationParserASM.AnnotationCollector collector = new AnnotationParserASM.AnnotationCollector();
+        AnnotationCollector collector = new AnnotationCollector();
         collector.visitMethod(Opcodes.ACC_PUBLIC, "testMethod", "()V", null, null)
                 .visitAnnotation("Lorg/example/MethodAnnotation;", true);
 

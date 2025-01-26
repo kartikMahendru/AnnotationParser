@@ -7,6 +7,6 @@ public class MainApplication {
             return;
         }
         String jarPath = args[0];
-        JarAnnotationParserV2.getInstance().scanJarForAnnotations(jarPath);
+        JarAnnotationParserClassGraph.getInstance().scanJarForAnnotations(jarPath);
     }
 }

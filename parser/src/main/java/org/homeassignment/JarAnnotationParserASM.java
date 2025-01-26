@@ -11,14 +11,22 @@ import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-public class AnnotationParserASM {
-    public static void main(String[] args) {
-        if (args.length < 1) {
-            System.out.println("Usage: java JarAnnotationScanner <path-to-jar>");
-            return;
-        }
+public class JarAnnotationParserASM {
 
-        String jarFilePath = args[0];
+    private static JarAnnotationParserASM instance = null;
+
+    private JarAnnotationParserASM(){}
+
+    public static synchronized JarAnnotationParserASM getInstance()
+    {
+        if (instance == null)
+            instance = new JarAnnotationParserASM();
+
+        return instance;
+    }
+
+    public  void scanJarForAnnotations(String jarFilePath) {
+
         Map<String, Map<String, Integer>> classAnnotationMap = new HashMap<>();
 
         try (JarFile jarFile = new JarFile(new File(jarFilePath))) {
@@ -57,46 +65,7 @@ public class AnnotationParserASM {
                     System.out.println("  " + annotation + ": " + count));
         });
     }
-
-    static class AnnotationCollector extends ClassVisitor {
-        private String className;
-        private final Map<String, Integer> annotations = new HashMap<>();
-
-        public AnnotationCollector() {
-            super(Opcodes.ASM9);
-        }
-
-        @Override
-        public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-            this.className = name.replace('/', '.');
-        }
-
-        @Override
-        public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
-            String annotationName = Type.getType(descriptor).getClassName();
-            annotations.put(annotationName, annotations.getOrDefault(annotationName, 0) + 1);
-            return super.visitAnnotation(descriptor, visible);
-        }
-
-        @Override
-        public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
-            return new MethodVisitor(Opcodes.ASM9) {
-                @Override
-                public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
-                    String annotationName = Type.getType(descriptor).getClassName();
-                    annotations.put(annotationName, annotations.getOrDefault(annotationName, 0) + 1);
-                    return super.visitAnnotation(descriptor, visible);
-                }
-            };
-        }
-
-        public String getClassName() {
-            return className;
-        }
-
-        public Map<String, Integer> getAnnotations() {
-            return annotations;
-        }
-    }
 }
+
+
 
