@@ -1,6 +1,6 @@
 package org.homeassignment.algorithms.impl;
 
-import org.homeassignment.AnnotationCollector;
+import org.homeassignment.util.AnnotationCollector;
 import org.homeassignment.algorithms.JarAnnotationParser;
 import org.homeassignment.util.JarFilePathUtil;
 import org.objectweb.asm.*;

@@ -12,8 +12,6 @@ public class MainApplication {
         }
         String jarPath = args[0];
 
-        //Todo : take input as asm or graph based on which interface is initialised and keep default as asm
-        // todo : do testing with non jar files like .txt or zip or add a check for file extension
         JarAnnotationParser jarAnnotationParser = new JarAnnotationParserASM();
         jarAnnotationParser.scanJarForAnnotations(jarPath);
     }

@@ -4,15 +4,9 @@ import org.homeassignment.algorithms.impl.JarAnnotationParserASM;
 import org.homeassignment.util.JarFilePathUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.objectweb.asm.ClassReader;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 import static org.junit.jupiter.api.Assertions.*;
 
