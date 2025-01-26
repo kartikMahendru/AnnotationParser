@@ -1,29 +1,20 @@
-package org.homeassignment;
+package org.homeassignment.algorithms.impl;
 
+import org.homeassignment.AnnotationCollector;
+import org.homeassignment.algorithms.JarAnnotationParser;
 import org.objectweb.asm.*;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-public class JarAnnotationParserASM {
-
-    private static JarAnnotationParserASM instance = null;
-
-    private JarAnnotationParserASM(){}
-
-    public static synchronized JarAnnotationParserASM getInstance()
-    {
-        if (instance == null)
-            instance = new JarAnnotationParserASM();
-
-        return instance;
-    }
+public class JarAnnotationParserASM implements JarAnnotationParser {
 
     public  void scanJarForAnnotations(String jarFilePath) {
 
@@ -35,8 +26,8 @@ public class JarAnnotationParserASM {
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();
                 if (entry.getName().endsWith(".class")) {
-                    try (FileInputStream inputStream = new FileInputStream(new File(jarFilePath))) {
-                        ClassReader classReader = new ClassReader(jarFile.getInputStream(entry));
+                    try (InputStream inputStream = jarFile.getInputStream(entry)) {
+                        ClassReader classReader = new ClassReader(inputStream);
                         AnnotationCollector annotationCollector = new AnnotationCollector();
                         classReader.accept(annotationCollector, 0);
 
@@ -48,13 +39,11 @@ public class JarAnnotationParserASM {
                         }
                     } catch (IOException e) {
                         System.out.println("Error processing class file: " + entry.getName());
-                        e.printStackTrace();
                     }
                 }
             }
         } catch (IOException e) {
             System.err.println("Failed to read the JAR file: " + jarFilePath);
-            e.printStackTrace();
         }
 
         // Print the analysis

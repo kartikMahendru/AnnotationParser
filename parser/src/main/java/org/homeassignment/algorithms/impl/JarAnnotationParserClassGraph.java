@@ -1,9 +1,10 @@
-package org.homeassignment;
+package org.homeassignment.algorithms.impl;
 
 import io.github.classgraph.AnnotationInfo;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ScanResult;
+import org.homeassignment.algorithms.JarAnnotationParser;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -12,22 +13,9 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JarAnnotationParserClassGraph {
-
-    private static JarAnnotationParserClassGraph instance = null;
-
-    private JarAnnotationParserClassGraph(){}
-
-    public static synchronized JarAnnotationParserClassGraph getInstance()
-    {
-        if (instance == null)
-            instance = new JarAnnotationParserClassGraph();
-
-        return instance;
-    }
+public class JarAnnotationParserClassGraph implements JarAnnotationParser {
 
     public void scanJarForAnnotations(String jarPath) {
-
         try {
             // Create a URLClassLoader to load classes from the JAR file
             URL[] urls = new URL[] { new File(jarPath).toURI().toURL() };
@@ -55,13 +43,12 @@ public class JarAnnotationParserClassGraph {
                     }
                     System.out.println();
                 }
-
             }
 
         } catch (MalformedURLException e) {
             System.err.println("Invalid JAR file path: " + e.getMessage());
         } catch (Exception e) {
-            System.err.println("An error occurred: " + e.getMessage());
+            System.err.println("An error occurred while scanning Jar File : " + e.getMessage());
         }
     }
 }
