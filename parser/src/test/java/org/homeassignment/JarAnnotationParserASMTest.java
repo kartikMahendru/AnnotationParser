@@ -1,21 +1,21 @@
 package org.homeassignment;
 
 import org.homeassignment.algorithms.impl.JarAnnotationParserASM;
+import org.homeassignment.util.JarFilePathUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.objectweb.asm.ClassReader;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.io.InputStream;
 import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
+import java.util.jar.JarFile;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.spy;
 
-// Unit tests for JarAnnotationParserASM
 class JarAnnotationParserASMTest {
 
     private JarAnnotationParserASM parser;
@@ -26,65 +26,62 @@ class JarAnnotationParserASMTest {
     }
 
     @Test
-    void testScanJarForAnnotations_ValidJarFile() throws IOException {
-        // Create a temporary JAR file dynamically with a sample class
-        File tempJar = File.createTempFile("test", ".jar");
-        try (JarOutputStream jarOut = new JarOutputStream(new FileOutputStream(tempJar))) {
-            // Add a mock ".class" file with a simple class structure
-            JarEntry entry = new JarEntry("com/example/TestClass.class");
-            jarOut.putNextEntry(entry);
-            jarOut.write(generateMockClassBytes());
-            jarOut.closeEntry();
-        }
+    void testScanJarForAnnotations_withValidJarWithAnnotations() {
+        // Arrange: Create or mock a JAR file with classes and annotations
+        String testJarPath = "src/test/resources/validJarWithAnnotations.jar";
+        assertTrue(new File(testJarPath).exists(), "Test JAR file should exist");
 
-        // Call the method with the valid temporary JAR file
-        parser.scanJarForAnnotations(tempJar.getAbsolutePath());
+        ByteArrayOutputStream outCapture = TestUtils.captureSystemOut();
+        parser.scanJarForAnnotations(testJarPath);
 
-        // Cleanup
-        Files.deleteIfExists(tempJar.toPath());
+        TestUtils.resetSystemOut();
+        String output = outCapture.toString();
+
+        // Assert: Validate System.out has expected annotation analysis content
+        assertTrue(output.contains("Class:"), "Output should contain Class-level annotations");
+        assertTrue(output.contains("Field level annotations"), "Output should include field annotations");
+        assertTrue(output.contains("Method level annotations"), "Output should include method annotations");
+        assertTrue(output.contains("Parameter level annotations"), "Output should include parameter annotations");
     }
 
     @Test
-    void testScanJarForAnnotations_InvalidJarPath() {
-        // Invalid JAR path
-        String invalidPath = "invalid/path/to/nonexistent.jar";
+    void testScanJarForAnnotations_withValidJarWithoutAnnotations() {
+        // Arrange: Create or mock a JAR file without annotations
+        String testJarPath = "src/test/resources/validJarWithoutAnnotations.jar";
 
-        // Ensure no exception is thrown but error handling is triggered
-        parser.scanJarForAnnotations(invalidPath);
+        ByteArrayOutputStream outCapture = TestUtils.captureSystemOut();
+        parser.scanJarForAnnotations(testJarPath);
 
-        // Since the scanJarForAnnotations method does not have a return,
-        // verify that error messages are logged (can mock LOGGER for assertions).
+        TestUtils.resetSystemOut();
+        String output = outCapture.toString();
+
+        assertTrue(output.contains("JAR Annotation Analysis:"), "Output should report analysis header");
+        assertFalse(output.contains("Class:"), "Output should NOT contain Class-level annotations");
+        assertFalse(output.contains("Field level annotations"), "Output should NOT contain field annotations");
+        assertFalse(output.contains("Method level annotations"), "Output should NOT contain method annotations");
+        assertFalse(output.contains("Parameter level annotations"), "Output should NOT contain parameter annotations");
+
     }
 
     @Test
-    void testScanJarForAnnotations_EmptyJarFile() throws IOException {
-        // Create an empty JAR file
-        File emptyJar = File.createTempFile("empty", ".jar");
-        try (JarOutputStream jarOut = new JarOutputStream(new FileOutputStream(emptyJar))) {
-            // No entries are added
-        }
+    void testScanJarForAnnotations_withInvalidJarPath() {
+        // Arrange
+        String invalidJarPath = "invalid/path/to/jarfile.jar";
 
-        // Call the method with the empty JAR file
-        parser.scanJarForAnnotations(emptyJar.getAbsolutePath());
+        ByteArrayOutputStream outCapture = TestUtils.captureSystemOut();
 
-        // Cleanup
-        Files.deleteIfExists(emptyJar.toPath());
+        parser.scanJarForAnnotations(invalidJarPath);
+        TestUtils.resetSystemOut();
+        String output = outCapture.toString();
 
-        // Verify no annotations were logged or detected
+        assertFalse(JarFilePathUtil.isValidJarFile(invalidJarPath));
+        assertTrue(output.contains("Jar File does not exist"), "Output should display an error message");
+        assertTrue(output.contains("invalid/path/to/jarfile.jar"),
+                "Output should include the invalid JAR path in the error message");
     }
 
     @Test
-    void testScanJarForAnnotations_NullJarPath() {
-        // Pass null as the JAR path
-        assertDoesNotThrow(() -> parser.scanJarForAnnotations(null));
-    }
-
-    private byte[] generateMockClassBytes() {
-        // This will generate simple mock .class bytes dynamically for testing purposes.
-        // Normally, you would use a library like ASM to generate a real class.
-        return new byte[] {
-                (byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE, // Magic number
-                0x00, 0x00, 0x00, 0x34 // Other minimal .class file data (version, etc.)
-        };
+    void testScanJarForAnnotations_withNullJarPath() {
+        assertFalse(JarFilePathUtil.isValidJarFile(null));
     }
 }
