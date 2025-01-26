@@ -38,7 +38,7 @@ The project consists of the following main components:
 To get started, clone the repository to your local machine:
 
 ```bash
-git clone <https://github.com/kartikMahendru/AnnotationParser
+git clone https://github.com/kartikMahendru/AnnotationParser
 cd AnnotationParser/parser
 ```
 
