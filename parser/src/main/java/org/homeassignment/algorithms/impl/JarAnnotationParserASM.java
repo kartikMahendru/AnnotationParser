@@ -104,6 +104,8 @@ public class JarAnnotationParserASM implements JarAnnotationParser {
                             System.out.println("    " + annotation + ": " + count));
                 }
             });
+        } else {
+            System.out.println("No Classes found with Annotations");
         }
     }
 }

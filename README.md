@@ -80,6 +80,8 @@ mvn test
 ```
 
 Test files are located in the `src/test/java` directory.
+The sample jar files used by test cases can also be used by someone who wants to run the MainApplication class.
+The sample jar files are located under `src > test > resources`
 
 ### Example Test Files
 
