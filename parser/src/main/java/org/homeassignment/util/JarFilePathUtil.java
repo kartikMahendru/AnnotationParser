@@ -13,6 +13,7 @@ public class JarFilePathUtil {
             return false;
         }
 
+        // Check if the file exists
         if (!jarFile.exists()) {
             System.out.println("Jar File does not exist : "+ jarFilePath);
             return false;
