@@ -17,13 +17,11 @@ import java.util.jar.JarFile;
 // parse jar for classes implementing annotations using ASM
 public class JarAnnotationParserASM implements JarAnnotationParser {
 
-    // declare maps for different type of annotations
-    private final Map<String, Map<String, Integer>> classAnnotationMap = new HashMap<>();
-    private final Map<String, Map<String, Integer>> fieldAnnotationMap = new HashMap<>();
-    private final Map<String, Map<String, Integer>> methodAnnotationMap = new HashMap<>();
-    private final Map<String, Map<String, Integer>> parameterAnnotationMap = new HashMap<>();
-
     public  Map<String, Map<AnnotationLevel, Map<String, Integer>>> scanJarForAnnotations(String jarFilePath) {
+
+        // declare mas for different type of annotations
+        // map structure : <Class Name <Annotation Level, <Annotation Name, Annotation Count>>>
+        Map<String, Map<AnnotationLevel, Map<String, Integer>>> annotationMap = new HashMap<>();
 
         // check for validity of jar file
         if(JarFilePathUtil.isValidJarFile(jarFilePath)) {
@@ -43,31 +41,27 @@ public class JarAnnotationParserASM implements JarAnnotationParser {
 
                             // preparing all the annotation maps structure : (Class Name : (Annotation Name, count of annotation))
                             if (!annotationCollector.getClassAnnotations().isEmpty()) {
-                                classAnnotationMap.put(
-                                        annotationCollector.getClassName(),
-                                        annotationCollector.getClassAnnotations()
-                                );
+                                annotationMap.putIfAbsent(annotationCollector.getClassName(), new HashMap<>());
+                                Map<AnnotationLevel, Map<String, Integer>> internalMap = annotationMap.get(annotationCollector.getClassName());
+                                internalMap.put(AnnotationLevel.CLASS, annotationCollector.getClassAnnotations());
                             }
 
                             if (!annotationCollector.getFieldAnnotations().isEmpty()) {
-                                fieldAnnotationMap.put(
-                                        annotationCollector.getClassName(),
-                                        annotationCollector.getFieldAnnotations()
-                                );
+                                annotationMap.putIfAbsent(annotationCollector.getClassName(), new HashMap<>());
+                                Map<AnnotationLevel, Map<String, Integer>> internalMap = annotationMap.get(annotationCollector.getClassName());
+                                internalMap.put(AnnotationLevel.FIELD, annotationCollector.getFieldAnnotations());
                             }
 
                             if (!annotationCollector.getMethodAnnotations().isEmpty()) {
-                                methodAnnotationMap.put(
-                                        annotationCollector.getClassName(),
-                                        annotationCollector.getMethodAnnotations()
-                                );
+                                annotationMap.putIfAbsent(annotationCollector.getClassName(), new HashMap<>());
+                                Map<AnnotationLevel, Map<String, Integer>> internalMap = annotationMap.get(annotationCollector.getClassName());
+                                internalMap.put(AnnotationLevel.METHOD, annotationCollector.getMethodAnnotations());
                             }
 
                             if (!annotationCollector.getParameterAnnotations().isEmpty()) {
-                                parameterAnnotationMap.put(
-                                        annotationCollector.getClassName(),
-                                        annotationCollector.getParameterAnnotations()
-                                );
+                                annotationMap.putIfAbsent(annotationCollector.getClassName(), new HashMap<>());
+                                Map<AnnotationLevel, Map<String, Integer>> internalMap = annotationMap.get(annotationCollector.getClassName());
+                                internalMap.put(AnnotationLevel.PARAMETER, annotationCollector.getParameterAnnotations());
                             }
                         } catch (IOException e) {
                             System.out.println("Error processing class file: " + entry.getName());
@@ -78,51 +72,9 @@ public class JarAnnotationParserASM implements JarAnnotationParser {
                 System.err.println("Failed to read the JAR file: " + jarFilePath + "Exception : " + e.getMessage());
             }
 
-            return prepareResponseMap();
+            return annotationMap;
         }
         return null;
-    }
-
-    private Map<String, Map<AnnotationLevel, Map<String, Integer>>> prepareResponseMap() {
-        /*
-        collect all maps and create a response map
-        Class Name -> ( Annotation Level  -> (Annotation Name : Count ) )
-        for each class, for each annotation level in that class, store annotation name to count map
-         */
-        Map<String, Map<AnnotationLevel, Map<String, Integer>>> responseMap = new HashMap<>();
-        if(!classAnnotationMap.isEmpty()) {
-            classAnnotationMap.forEach((className, annotationMap) -> {
-                responseMap.putIfAbsent(className, new HashMap<>());
-                Map<AnnotationLevel, Map<String, Integer>> internalMap = responseMap.get(className);
-                internalMap.put(AnnotationLevel.CLASS, annotationMap);
-            });
-        }
-
-        if(!fieldAnnotationMap.isEmpty()) {
-            fieldAnnotationMap.forEach((className, annotationMap) -> {
-                responseMap.putIfAbsent(className, new HashMap<>());
-                Map<AnnotationLevel, Map<String, Integer>> internalMap = responseMap.get(className);
-                internalMap.put(AnnotationLevel.FIELD, annotationMap);
-            });
-        }
-
-        if(!methodAnnotationMap.isEmpty()) {
-            methodAnnotationMap.forEach((className, annotationMap) -> {
-                responseMap.putIfAbsent(className, new HashMap<>());
-                Map<AnnotationLevel, Map<String, Integer>> internalMap = responseMap.get(className);
-                internalMap.put(AnnotationLevel.METHOD, annotationMap);
-            });
-        }
-
-        if(!parameterAnnotationMap.isEmpty()) {
-            parameterAnnotationMap.forEach((className, annotationMap) -> {
-                responseMap.putIfAbsent(className, new HashMap<>());
-                Map<AnnotationLevel, Map<String, Integer>> internalMap = responseMap.get(className);
-                internalMap.put(AnnotationLevel.PARAMETER, annotationMap);
-            });
-        }
-
-        return responseMap;
     }
 
     public void printAnnotationAnalysis(Map<String, Map<AnnotationLevel, Map<String, Integer>>> responseMap) {
