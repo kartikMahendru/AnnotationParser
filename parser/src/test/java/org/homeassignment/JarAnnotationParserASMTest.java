@@ -48,7 +48,7 @@ class JarAnnotationParserASMTest {
         String testJarPath = "src/test/resources/validJarWithoutAnnotations.jar";
 
         Map<String, Map<AnnotationLevel, Map<String, Integer>>> responseMap = parser.scanJarForAnnotations(testJarPath);
-        assertTrue(responseMap.isEmpty(), "Reponse map should be empty");
+        assertTrue(responseMap.isEmpty(), "Response map should be empty");
 
     }
 
